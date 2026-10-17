@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KenyAI: Kenya Accelerates Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700;800;900&family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Fredoka', 'Quicksand', cursive, sans-serif;
+      background-color: #FAF4E8;
+      color: #2D3748;
+      overflow-x: hidden;
+      user-select: none;
+      font-size: 1.15rem;
+    }
+
+    .brand-title {
+      font-family: 'Fredoka', sans-serif;
+      color: #1B4332;
+      text-shadow: 3px 3px 0px #D8F3DC, 5px 5px 0px #2D6A4F;
+    }
+
+    .green-headline {
+      color: #2D6A4F;
+      font-weight: 800;
+    }
+
+    .animal-container {
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .animal-container.talking {
+      animation: gentleHeadBob 0.6s infinite alternate ease-in-out;
+    }
+
+    .animal-container.correct-jump {
+      animation: happyJump 0.6s ease-in-out;
+    }
+
+    @keyframes gentleHeadBob {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-6px) rotate(2deg); }
+    }
+
+    @keyframes happyJump {
+      0% { transform: translateY(0) scale(1); }
+      40% { transform: translateY(-32px) scale(1.1); }
+      70% { transform: translateY(0) scale(0.95); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .mouth-open {
+      transition: opacity 0.15s ease-in-out;
+    }
+
+    .safari-card {
+      background: #FFFFFF;
+      border: 5px solid #E9C46A;
+      border-radius: 2.5rem;
+      box-shadow: 0 16px 32px -8px rgba(212, 140, 0, 0.22);
+    }
+
+    .egg-basket-glow {
+      box-shadow: 0 0 24px rgba(230, 57, 70, 0.35);
+      animation: floatBasket 3s ease-in-out infinite;
+    }
+
+    @keyframes floatBasket {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1E2C3;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A9D8F;
+      border-radius: 10px;
+    }
+
+    .tracing-canvas {
+      touch-action: none;
+      cursor: crosshair;
+      border: 5px dashed #2A9D8F;
+      border-radius: 2rem;
+      background: #FFFFFF;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
+
+  <header class="w-full max-w-6xl mx-auto p-4 flex flex-wrap justify-between items-center gap-4 z-50">
+    <div class="flex items-center gap-4 flex-wrap">
+      <button onclick="openRoadmapsModal()" class="flex items-center gap-3 bg-white px-6 py-3.5 rounded-3xl border-4 border-[#E9C46A] hover:scale-105 transition-transform cursor-pointer shadow-xl group">
+        <span class="text-4xl group-hover:rotate-12 transition-transform">🗺️</span>
+        <div class="text-left">
+          <div class="text-xs uppercase font-extrabold text-[#E76F51] tracking-wide">Curriculum</div>
+          <div class="text-base font-black text-[#264653]">Lesson Roadmaps ➔</div>
+        </div>
+      </button>
+
+      <button onclick="openBadgesModal()" class="flex items-center gap-3 bg-white px-6 py-3.5 rounded-3xl border-4 border-[#2A9D8F] hover:scale-105 transition-transform cursor-pointer shadow-xl group">
+        <div class="w-12 h-12 flex-shrink-0 bg-[#E8F5E9] rounded-2xl border-2 border-[#2A9D8F] flex items-center justify-center text-3xl group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-inner">
+          🏆
+        </div>
+        <div class="text-left">
+          <div class="text-xs uppercase font-extrabold text-[#2A9D8F] tracking-wider">Trophies</div>
+          <div id="badge-count-text" class="text-base font-black text-[#264653]">0 / 6 Unlocked</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="brand-title text-center hidden lg:block">
+      <h1 class="text-4xl font-black text-[#1B4332] tracking-tight">KenyAI</h1>
+      <p class="text-xs font-black text-[#2D6A4F] tracking-widest uppercase">Inspire • Interpret • Impart</p>
+    </div>
+
+    <button onclick="openEggModal()" class="egg-basket-glow flex items-center gap-3.5 bg-[#FFE8D6] px-6 py-3.5 rounded-3xl border-4 border-[#F4A261] hover:scale-105 transition-transform cursor-pointer shadow-xl group">
+      <div class="relative w-12 h-12 flex-shrink-0 bg-[#FFD1DC] rounded-2xl border-2 border-[#E76F51] flex items-center justify-center text-3xl group-hover:bounce transition-transform shadow-inner">
+        🧺
+        <span id="egg-badge" class="absolute -top-2.5 -right-2.5 bg-[#E76F51] text-white text-xs font-black w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-md">0</span>
+      </div>
+      <div class="text-left">
+        <div class="text-xs font-extrabold text-[#E76F51] uppercase tracking-wider">Surprise Eggs</div>
+        <div class="text-base font-black text-[#264653]">Tap to Crack! 🥚</div>
+      </div>
+    </button>
+  </header>
+
+  <main class="flex-grow flex items-center justify-center p-4">
+    <div class="w-full max-w-5xl">
+
+      <!-- ================= PAGE 1: WELCOME PAGE ================= -->
+      <section id="welcome-page" class="flex flex-col items-center text-center space-y-6">
+        <div class="space-y-3">
+          <h1 class="brand-title text-4xl sm:text-6xl font-black leading-tight">KenyAI: Kenya Accelerates Intelligence</h1>
+          <p class="green-headline text-2xl sm:text-4xl font-extrabold">Inspire. Interpret. Impart.</p>
+        </div>
+
+        <div class="animal-container w-60 h-60 my-2 cursor-pointer" id="turi-welcome-container" onclick="speakText('Jambo! I am Turi the Lion! Click start to see what learning journey awaits you!')">
+        </div>
+
+        <div class="bg-white px-8 py-5 rounded-3xl border-4 border-[#2A9D8F] shadow-xl max-w-xl">
+          <p id="turi-welcome-text" class="text-2xl font-black text-[#264653] leading-snug">
+            "Jambo! I am Turi the Lion. I will guide you on your journey to reading mastery!"
+          </p>
+        </div>
+
+        <button onclick="goToRoadmap()" class="bg-[#2A9D8F] hover:bg-[#218377] text-white text-2xl sm:text-3xl font-black px-10 py-6 rounded-3xl border-4 border-white shadow-2xl hover:scale-105 transition-all cursor-pointer">
+          Click start to see what learning journey awaits you! 🚀
+        </button>
+      </section>
+
+      <!-- ================= PAGE 2: ROADMAP CAROUSEL ================= -->
+      <section id="roadmap-page" class="hidden flex-col items-center space-y-6">
+        <div class="text-center">
+          <h2 class="green-headline text-3xl sm:text-5xl font-black">Our Safari Literacy Roadmap</h2>
+          <p class="text-lg text-[#4A5568] font-bold mt-2">Swipe or use arrows to discover all 3 learning stages!</p>
+        </div>
+
+        <div class="relative w-full overflow-hidden rounded-3xl border-4 border-[#E9C46A] bg-white p-2 shadow-2xl">
+          <div id="roadmap-slider" class="flex transition-transform duration-500 ease-in-out">
+            
+            <!-- Stage 1: Inspire -->
+            <div class="w-full flex-shrink-0 p-4">
+              <div class="bg-[#FFF8E7] border-4 border-[#E9C46A] rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-center gap-6">
+                <div class="w-48 h-48 flex-shrink-0 bg-[#FFE6A7] rounded-3xl flex items-center justify-center border-4 border-[#E9C46A] shadow-inner">
+                  <div class="animal-container w-40 h-40" id="card-yuri-container"></div>
+                </div>
+                <div class="space-y-3 text-left flex-grow">
+                  <div class="flex items-center gap-3">
+                    <span class="bg-[#E76F51] text-white font-extrabold px-4 py-1.5 rounded-full text-sm">STAGE 1</span>
+                    <h3 class="text-3xl font-black text-[#E76F51]">Inspire (Pre-K to Kinder)</h3>
+                  </div>
+                  <p class="text-base font-bold text-[#4A5568]">Guided by <span class="font-extrabold text-[#E76F51]">Yuri the Cow 🐄</span></p>
+                  <ul class="text-base space-y-1.5 text-[#264653] font-bold">
+                    <li>✨ Alphabet Sounds, Tracing & Safari Word Games</li>
+                    <li>✨ Interactive Letter Picking Games under Acacia Trees</li>
+                    <li>✨ Discover why reading matters in daily Kenyan life!</li>
+                  </ul>
+                  <div class="pt-2">
+                    <button onclick="showStageOverview('inspire')" class="bg-[#E76F51] hover:bg-[#D45033] text-white font-black px-6 py-3 rounded-2xl text-lg shadow-md hover:scale-105 transition-all cursor-pointer">
+                      Start Stage 1 Lessons 🚀
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 2: Interpret -->
+            <div class="w-full flex-shrink-0 p-4">
+              <div class="bg-[#F4F1DE] border-4 border-[#F4A261] rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-center gap-6">
+                <div class="w-48 h-48 flex-shrink-0 bg-[#FCD5CE] rounded-3xl flex items-center justify-center border-4 border-[#F4A261] shadow-inner">
+                  <div class="animal-container w-40 h-40" id="card-zuri-container"></div>
+                </div>
+                <div class="space-y-3 text-left flex-grow">
+                  <div class="flex items-center gap-3">
+                    <span class="bg-[#F4A261] text-white font-extrabold px-4 py-1.5 rounded-full text-sm">STAGE 2</span>
+                    <h3 class="text-3xl font-black text-[#F4A261]">Interpret (Early Reader)</h3>
+                  </div>
+                  <p class="text-base font-bold text-[#4A5568]">Guided by <span class="font-extrabold text-[#F4A261]">Zuri the Happy Leopard 🐆</span></p>
+                  <ul class="text-base space-y-1.5 text-[#264653] font-bold">
+                    <li>✨ Safari Storybooks & Wildlife Sentence Building</li>
+                    <li>✨ River Crossing & Word Safari Mini-Games</li>
+                    <li>✨ Reading Comprehension & Kenyan Nature Tales</li>
+                  </ul>
+                  <div class="pt-2">
+                    <button onclick="showStageOverview('interpret')" class="bg-[#F4A261] hover:bg-[#E76F51] text-white font-black px-6 py-3 rounded-2xl text-lg shadow-md hover:scale-105 transition-all cursor-pointer">
+                      Start Stage 2 Lessons 🚀
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 3: Impart -->
+            <div class="w-full flex-shrink-0 p-4">
+              <div class="bg-[#E8F5E9] border-4 border-[#2A9D8F] rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-center gap-6">
+                <div class="w-48 h-48 flex-shrink-0 bg-[#B7E4C7] rounded-3xl flex items-center justify-center border-4 border-[#2A9D8F] shadow-inner">
+                  <div class="animal-container w-40 h-40" id="card-kazi-container"></div>
+                </div>
+                <div class="space-y-3 text-left flex-grow">
+                  <div class="flex items-center gap-3">
+                    <span class="bg-[#2A9D8F] text-white font-extrabold px-4 py-1.5 rounded-full text-sm">STAGE 3</span>
+                    <h3 class="text-3xl font-black text-[#2A9D8F]">Impart (Mastery & Leadership)</h3>
+                  </div>
+                  <p class="text-base font-bold text-[#4A5568]">Guided by <span class="font-extrabold text-[#2A9D8F]">Kazi the Giraffe 🦒</span></p>
+                  <ul class="text-base space-y-1.5 text-[#264653] font-bold">
+                    <li>✨ Advanced Communication & Expression Skills</li>
+                    <li>✨ Vocabulary Building & Expression Games</li>
+                    <li>✨ Literacy Mastery Badges & Peer Mentorship</li>
+                  </ul>
+                  <div class="pt-2">
+                    <button onclick="showStageOverview('impart')" class="bg-[#2A9D8F] hover:bg-[#218377] text-white font-black px-6 py-3 rounded-2xl text-lg shadow-md hover:scale-105 transition-all cursor-pointer">
+                      Start Stage 3 Lessons 🚀
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <button onclick="prevRoadmapSlide()" class="bg-[#E76F51] text-white text-2xl font-black w-14 h-14 rounded-full border-4 border-white shadow-xl cursor-pointer">←</button>
+          <div class="flex gap-3">
+            <span id="dot-0" class="w-5 h-5 rounded-full bg-[#2A9D8F]"></span>
+            <span id="dot-1" class="w-5 h-5 rounded-full bg-gray-300"></span>
+            <span id="dot-2" class="w-5 h-5 rounded-full bg-gray-300"></span>
+          </div>
+          <button onclick="nextRoadmapSlide()" class="bg-[#E76F51] text-white text-2xl font-black w-14 h-14 rounded-full border-4 border-white shadow-xl cursor-pointer">→</button>
+        </div>
+
+        <button onclick="goToAssessment()" class="bg-[#E76F51] hover:bg-[#D45033] text-white text-2xl sm:text-3xl font-black px-10 py-5 rounded-3xl border-4 border-white shadow-xl hover:scale-105 transition-all cursor-pointer">
+          Click play to find your level 🎯
+        </button>
+      </section>
+
+      <!-- ================= PAGE 3: ASSESSMENT TOOL ================= -->
+      <section id="assessment-page" class="hidden flex-col items-center space-y-6">
+        <div class="text-center">
+          <span class="bg-[#E76F51] text-white font-extrabold px-5 py-2 rounded-full text-base uppercase tracking-wider">Assessment Tool</span>
+          <h2 class="green-headline text-3xl sm:text-5xl font-black mt-2">Find Your Learning Level</h2>
+        </div>
+
+        <div class="safari-card p-6 sm:p-8 w-full flex flex-col md:flex-row items-center gap-6">
+          <div class="w-48 h-48 flex-shrink-0 bg-[#FFE6A7] rounded-3xl flex items-center justify-center border-4 border-[#E9C46A]">
+            <div class="animal-container w-40 h-40" id="assessment-turi-container"></div>
+          </div>
+
+          <div class="flex-grow space-y-4 text-left w-full">
+            <div class="bg-[#F4F1DE] p-5 rounded-3xl border-4 border-[#E9C46A] relative">
+              <p id="assessment-speech" class="text-xl sm:text-2xl font-black text-[#264653] leading-snug">
+                "Jambo! I am Turi. Let's play a game to find your best starting level!"
+              </p>
+            </div>
+
+            <div class="text-sm font-black text-[#2A9D8F] uppercase tracking-wider flex justify-between">
+              <span id="question-number-badge">Question 1 of 12</span>
+              <span id="assessment-score-badge">Score: 0</span>
+            </div>
+
+            <h3 id="assessment-question-text" class="text-2xl sm:text-3xl font-black text-[#1B4332]">
+              Loading Question...
+            </h3>
+
+            <div id="assessment-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PAGE 4: STAGE CURRICULUM ROADMAP OVERVIEW ================= -->
+      <section id="stage-overview-page" class="hidden flex-col items-center space-y-6">
+        <div class="text-center">
+          <span id="overview-stage-badge" class="bg-[#E76F51] text-white font-extrabold px-5 py-2 rounded-full text-sm uppercase tracking-wider">Stage Overview</span>
+          <h2 id="overview-stage-title" class="green-headline text-3xl sm:text-5xl font-black mt-2">Stage Curriculum Map</h2>
+          <p id="overview-stage-subtitle" class="text-lg font-bold text-[#4A5568] mt-1">Explore what you will learn with your animal companion!</p>
+        </div>
+
+        <div class="safari-card p-6 sm:p-8 w-full space-y-6">
+          <div class="flex flex-col sm:flex-row items-center gap-5 bg-[#FFF8E7] p-5 rounded-3xl border-4 border-[#E9C46A]">
+            <div class="w-28 h-28 flex-shrink-0 bg-white rounded-2xl border-4 border-[#E9C46A] flex items-center justify-center">
+              <div class="animal-container w-24 h-24" id="overview-companion-container"></div>
+            </div>
+            <div>
+              <h3 id="overview-guide-name" class="text-2xl font-black text-[#264653]">Your Animal Teacher</h3>
+              <p id="overview-guide-desc" class="text-base font-bold text-[#4A5568] mt-1">Here is your complete lesson roadmap with games and tracing exercises!</p>
+            </div>
+          </div>
+
+          <div id="curriculum-steps-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+          </div>
+
+          <div class="text-center pt-3">
+            <button onclick="beginCourseLessons()" class="bg-[#2A9D8F] hover:bg-[#218377] text-white text-2xl font-black px-10 py-5 rounded-3xl border-4 border-white shadow-xl hover:scale-105 transition-all cursor-pointer">
+              Start Lesson 1 Now! 🚀
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PAGE 5: COURSE LESSON & PRACTICE SECTION ================= -->
+      <section id="course-page" class="hidden flex-col items-center space-y-6">
+        <div class="w-full text-center space-y-3">
+          <div class="flex justify-between items-center px-2">
+            <span id="course-stage-badge" class="bg-[#2A9D8F] text-white font-extrabold px-5 py-1.5 rounded-full text-sm uppercase">Stage 1</span>
+            <span id="course-progress-text" class="text-sm font-black text-[#2D6A4F]">Step 1 / 7 (14%)</span>
+          </div>
+
+          <div class="w-full bg-gray-200 h-5 rounded-full overflow-hidden border-4 border-[#2A9D8F] shadow-inner relative">
+            <div id="course-progress-bar" class="bg-[#2A9D8F] h-full transition-all duration-500" style="width: 14%"></div>
+          </div>
+
+          <h2 id="course-stage-title" class="green-headline text-3xl sm:text-4xl font-black">Phonetics & Alphabet</h2>
+        </div>
+
+        <div class="safari-card p-6 sm:p-8 w-full flex flex-col md:flex-row items-center gap-6">
+          <div class="w-48 h-48 flex-shrink-0 bg-[#FFE8D6] rounded-3xl flex items-center justify-center border-4 border-[#F4A261]">
+            <div class="animal-container w-40 h-40" id="course-companion-container"></div>
+          </div>
+
+          <div class="flex-grow space-y-5 text-left w-full">
+            <div class="bg-[#E8F5E9] p-5 rounded-3xl border-4 border-[#2A9D8F]">
+              <p id="course-companion-speech" class="text-xl sm:text-2xl font-black text-[#1B4332] leading-relaxed">
+                "Welcome to your lesson! Let's read and learn together!"
+              </p>
+            </div>
+
+            <div id="lesson-card-content" class="bg-[#FAF4E8] p-6 rounded-3xl border-4 border-[#E9C46A] space-y-4"></div>
+
+            <div id="course-tracing-container" class="hidden flex flex-col items-center space-y-4">
+              <p class="text-sm font-black text-[#2A9D8F] uppercase tracking-wide">Use your finger or mouse to trace the ENTIRE letter below!</p>
+              <div class="relative">
+                <canvas id="tracing-canvas" width="300" height="220" class="tracing-canvas shadow-inner"></canvas>
+                <div id="tracing-guide-letter" class="absolute inset-0 flex items-center justify-center pointer-events-none text-9xl font-black text-gray-200 select-none opacity-40">
+                  A
+                </div>
+              </div>
+              <div class="flex gap-4">
+                <button onclick="clearTracingCanvas()" class="bg-[#E76F51] text-white font-black px-6 py-2.5 rounded-2xl text-sm hover:scale-105 cursor-pointer shadow">
+                  🧹 Clear Canvas
+                </button>
+              </div>
+            </div>
+
+            <div id="course-game-container" class="hidden space-y-4">
+              <div class="bg-[#FFF8E7] p-4 rounded-2xl border-2 border-[#E9C46A]">
+                <h4 id="game-instruction-title" class="text-lg font-black text-[#E76F51]">Tap all items that match!</h4>
+                <p id="game-instruction-subtitle" class="text-xs font-bold text-[#4A5568] mt-1">Select ALL correct items on the board to finish!</p>
+              </div>
+              <div id="game-items-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-4"></div>
+            </div>
+
+            <div id="course-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden"></div>
+
+            <div class="flex justify-between items-center pt-3">
+              <button onclick="repeatCompanionSpeech()" class="bg-[#F4A261] hover:bg-[#E76F51] text-white font-black px-5 py-3 rounded-2xl text-base transition-transform cursor-pointer shadow">
+                🔊 Listen Again
+              </button>
+              <button id="course-next-btn" onclick="nextCourseStep()" class="bg-[#2A9D8F] hover:bg-[#218377] text-white font-black px-8 py-3.5 rounded-2xl text-lg shadow-lg transition-transform cursor-pointer">
+                Continue Lesson ➔
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ================= SURPRISE EGG CRACKING MODAL ================= -->
+  <div id="egg-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-[2.5rem] border-8 border-[#F4A261] max-w-xl w-full p-8 text-center space-y-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeEggModal()" class="absolute top-5 right-6 text-gray-400 hover:text-gray-700 text-4xl font-black cursor-pointer">✕</button>
+
+      <div class="space-y-2">
+        <div class="text-6xl animate-bounce inline-block">🧺</div>
+        <h3 class="text-3xl sm:text-4xl font-black text-[#E76F51]">Surprise Eggs Basket</h3>
+        <p class="text-lg text-[#4A5568] font-black">Tap an egg to crack it open and reveal a surprise treat!</p>
+      </div>
+
+      <div id="eggs-container" class="flex flex-wrap justify-center gap-6 py-4 min-h-[140px] bg-[#FFF8E7] rounded-3xl border-4 border-[#E9C46A] p-4"></div>
+
+      <div id="gift-reveal-box" class="hidden bg-[#E8F5E9] p-6 rounded-3xl border-4 border-[#2A9D8F] space-y-4 shadow-xl">
+        <div id="gift-icon" class="text-7xl animate-pulse">🎁</div>
+        <div id="gift-title" class="text-[#264653] font-black text-2xl">You found a treat!</div>
+        <p id="gift-desc" class="text-lg font-bold text-[#4A5568]">Give it to your animal friend!</p>
+        <button id="give-gift-btn" class="bg-[#2A9D8F] hover:bg-[#218377] text-white font-black px-8 py-4 rounded-3xl text-xl hover:scale-105 cursor-pointer shadow-xl transition-transform border-4 border-white">
+          Give Gift to Animal Guide 🐾
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BADGES & ACHIEVEMENTS MODAL ================= -->
+  <div id="badges-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 sm:p-6 z-50">
+    <div class="bg-white rounded-[2.5rem] border-8 border-[#2A9D8F] max-w-2xl w-full p-6 sm:p-8 text-center space-y-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeBadgesModal()" class="absolute top-5 right-6 text-gray-400 hover:text-gray-700 text-4xl font-black cursor-pointer">✕</button>
+
+      <div class="space-y-2">
+        <div class="text-6xl inline-block">🏆</div>
+        <h3 class="text-3xl sm:text-4xl font-black text-[#2A9D8F]">Achievement Badges</h3>
+        <p class="text-lg text-[#4A5568] font-black">Earn stars, complete lessons, and crack eggs to unlock all 6 badges!</p>
+      </div>
+
+      <div id="badges-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-5 pt-2"></div>
+    </div>
+  </div>
+
+  <!-- ================= ENLARGED LESSON ROADMAPS OVERVIEW MODAL ================= -->
+  <div id="roadmaps-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 sm:p-6 z-50">
+    <div class="bg-white rounded-[2.5rem] border-8 border-[#E9C46A] max-w-3xl w-full p-6 sm:p-8 text-center space-y-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeRoadmapsModal()" class="absolute top-5 right-6 text-gray-400 hover:text-gray-700 text-4xl font-black cursor-pointer">✕</button>
+
+      <div class="space-y-2">
+        <h3 class="text-3xl sm:text-4xl font-black text-[#E76F51]">🗺️ Comprehensive Lesson Roadmaps</h3>
+        <p class="text-lg text-[#4A5568] font-extrabold">Select any course stage below to explore its full curriculum map!</p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 text-left pt-2">
+        
+        <button onclick="selectModalRoadmap('inspire')" class="flex items-center gap-6 bg-[#FFF8E7] border-4 border-[#E9C46A] p-5 rounded-3xl hover:scale-102 transition-transform cursor-pointer shadow-lg group">
+          <div class="w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0 bg-[#FFE6A7] rounded-3xl border-4 border-[#E9C46A] flex items-center justify-center p-2 shadow-inner">
+            <div class="animal-container w-full h-full" id="modal-yuri-avatar"></div>
+          </div>
+          <div class="space-y-1.5 flex-grow">
+            <span class="text-xs font-black bg-[#E76F51] text-white px-3 py-1 rounded-full uppercase tracking-wider">Stage 1</span>
+            <div class="text-2xl sm:text-3xl font-black text-[#264653] group-hover:text-[#E76F51] transition-colors">Inspire Roadmap</div>
+            <div class="text-base font-bold text-[#4A5568]">Guided by <span class="text-[#E76F51] font-black">Yuri the Cow</span> (Letter Sounds, Tracing & Games)</div>
+          </div>
+        </button>
+
+        <button onclick="selectModalRoadmap('interpret')" class="flex items-center gap-6 bg-[#F4F1DE] border-4 border-[#F4A261] p-5 rounded-3xl hover:scale-102 transition-transform cursor-pointer shadow-lg group">
+          <div class="w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0 bg-[#FCD5CE] rounded-3xl border-4 border-[#F4A261] flex items-center justify-center p-2 shadow-inner">
+            <div class="animal-container w-full h-full" id="modal-zuri-avatar"></div>
+          </div>
+          <div class="space-y-1.5 flex-grow">
+            <span class="text-xs font-black bg-[#F4A261] text-white px-3 py-1 rounded-full uppercase tracking-wider">Stage 2</span>
+            <div class="text-2xl sm:text-3xl font-black text-[#264653] group-hover:text-[#F4A261] transition-colors">Interpret Roadmap</div>
+            <div class="text-base font-bold text-[#4A5568]">Guided by <span class="text-[#F4A261] font-black">Zuri the Leopard</span> (Storybooks & Sentences)</div>
+          </div>
+        </button>
+
+        <button onclick="selectModalRoadmap('impart')" class="flex items-center gap-6 bg-[#E8F5E9] border-4 border-[#2A9D8F] p-5 rounded-3xl hover:scale-102 transition-transform cursor-pointer shadow-lg group">
+          <div class="w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0 bg-[#B7E4C7] rounded-3xl border-4 border-[#2A9D8F] flex items-center justify-center p-2 shadow-inner">
+            <div class="animal-container w-full h-full" id="modal-kazi-avatar"></div>
+          </div>
+          <div class="space-y-1.5 flex-grow">
+            <span class="text-xs font-black bg-[#2A9D8F] text-white px-3 py-1 rounded-full uppercase tracking-wider">Stage 3</span>
+            <div class="text-2xl sm:text-3xl font-black text-[#264653] group-hover:text-[#2A9D8F] transition-colors">Impart Roadmap</div>
+            <div class="text-base font-bold text-[#4A5568]">Guided by <span class="text-[#2A9D8F] font-black">Kazi the Giraffe</span> (Advanced Expression)</div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentStars = 0;
+    let totalEggs = 0;
+    let eggsCracked = 0;
+    let roadmapSlideIndex = 0;
+    
+    let currentAssessmentIndex = 0;
+    let assessmentScore = 0;
+
+    let activeStageKey = 'inspire'; 
+    let currentLessonStep = 0;
+
+    let selectedGameIndices = [];
+    let isTracing = false;
+    let tracingCtx = null;
+    let guideCanvas = null;
+    let guideCtx = null;
+    let gameNudgeTimer = null;
+    let tracingIdleTimer = null;
+    let currentGuideLetter = "A";
+    let tracingGradedSuccess = false;
+
+    const badgesData = [
+      { id: "first_step", name: "First Safari Step", icon: "🐾", desc: "Complete assessment tool", unlock: () => currentAssessmentIndex >= assessmentQuestions.length || currentStars >= 10 },
+      { id: "star_collector", name: "Star Collector", icon: "⭐", desc: "Collect 50 or more stars", unlock: () => currentStars >= 50 },
+      { id: "egg_cracker", name: "Egg Hunter", icon: "🥚", desc: "Crack open at least 1 egg", unlock: () => eggsCracked >= 1 },
+      { id: "inspire_master", name: "Inspire Champion", icon: "🐄", desc: "Finish Stage 1 lessons", unlock: () => completedStages.includes('inspire') },
+      { id: "interpret_master", name: "Interpret Reader", icon: "🐆", desc: "Finish Stage 2 lessons", unlock: () => completedStages.includes('interpret') },
+      { id: "impart_master", name: "Impart Leader", icon: "🦒", desc: "Finish Stage 3 lessons", unlock: () => completedStages.includes('impart') }
+    ];
+
+    let unlockedBadgeIds = [];
+    let completedStages = [];
+
+    const assessmentQuestions = [
+      { question: "Which letter makes the 'A... A... Apple' sound?", options: ["Letter A", "Letter B", "Letter C", "Letter D"], correct: 0, stage: "inspire" },
+      { question: "Look at the picture word: 'C - A - T'. What word is that?", options: ["Dog", "Cat", "Cow", "Sun"], correct: 1, stage: "inspire" },
+      { question: "What sound does Yuri the Cow make?", options: ["Moo", "Roar", "Quack", "Meow"], correct: 0, stage: "inspire" },
+      { question: "Which word starts with the letter 'S'?", options: ["Ball", "Sun", "Tree", "Fish"], correct: 1, stage: "inspire" },
+      { question: "Read this sentence: 'The red bus goes to Nairobi.' What color is the bus?", options: ["Blue", "Green", "Red", "Yellow"], correct: 2, stage: "interpret" },
+      { question: "Finish the sentence: 'Zuri likes to ____ books every afternoon.'", options: ["read", "jump", "sleep", "fly"], correct: 0, stage: "interpret" },
+      { question: "What is the opposite of 'Big'?", options: ["Tall", "Small", "Fast", "Heavy"], correct: 1, stage: "interpret" },
+      { question: "Where do fish live?", options: ["In the sky", "In the water", "In the trees", "In a box"], correct: 1, stage: "interpret" },
+      { question: "Which sentence shows polite and clear communication?", options: ["Please give me the book, thank you!", "Give me book now!", "Go away!", "No!"], correct: 0, stage: "impart" },
+      { question: "Which word is an action word (verb)?", options: ["Run", "Chair", "Book", "Grass"], correct: 0, stage: "impart" },
+      { question: "Which word means 'very happy'?", options: ["Joyful", "Sad", "Sleepy", "Cold"], correct: 0, stage: "impart" },
+      { question: "What does literacy help us do every day in Kenya?", options: ["Read street signs & storybooks", "Only sleep", "Nothing at all", "Count rocks"], correct: 0, stage: "impart" }
+    ];
+
+    const courseData = {
+      inspire: {
+        title: "Stage 1: Inspire",
+        companion: "yuri",
+        companionName: "Yuri the Cow 🐄",
+        steps: [
+          {
+            title: "Lesson 1: Letter Sounds (Phonetics)",
+            type: "lesson",
+            speech: "Moo! Jambo! I am Yuri the Cow. Let's learn our phonetics! The letter A makes the sound 'Ah' like in Apple!",
+            cardTitle: "Lesson 1: Letter Sounds (Phonetics)",
+            cardBody: "<div class='text-center space-y-3'><span class='text-7xl font-black text-[#E76F51]'>Aa</span><p class='text-xl font-extrabold text-[#264653]'>A is for Apple 🍎 & Akili (Brain) 🧠</p></div>"
+          },
+          {
+            title: "Interactive Game: Safari Tree Letter Hunt 🌳",
+            type: "game",
+            speech: "Help Yuri gather apples! Tap ALL the Acacia trees that have the letter 'A' on them!",
+            gameTitle: "Tap ALL Acacia trees with the letter 'A'!",
+            targetItems: ["A", "B", "A", "C", "A", "D"],
+            correctIndices: [0, 2, 4],
+            targetIcon: "🌳"
+          },
+          {
+            title: "Practice 1: Letter Sound Check",
+            type: "question",
+            speech: "What sound does the letter A make?",
+            questionText: "What sound does the letter A make?",
+            options: ["Ah ah ah!", "Buh buh buh!", "Moo moo!", "Mmm mmm!"],
+            correct: 0
+          },
+          {
+            title: "Tracing Activity: Trace the Letter 'A'",
+            type: "tracing",
+            guideLetter: "A",
+            speech: "Now use your finger or mouse to trace the letter A on the tracing card!"
+          },
+          {
+            title: "Lesson 2: Letter B Sounds",
+            type: "lesson",
+            speech: "Great tracing! Next is Letter B! B makes the 'Buh' sound like in Bus 🚌 and Buffalo 🐃!",
+            cardTitle: "Lesson 2: Letter B (Phonetics)",
+            cardBody: "<div class='text-center space-y-3'><span class='text-7xl font-black text-[#2A9D8F]'>Bb</span><p class='text-xl font-extrabold text-[#264653]'>B is for Bus 🚌 & Buffalo 🐃</p></div>"
+          },
+          {
+            title: "Practice 2: Safari Word Matching",
+            type: "question",
+            speech: "Which of these safari animals starts with the letter B?",
+            questionText: "Which animal starts with the letter B?",
+            options: ["Buffalo", "Lion", "Giraffe", "Elephant"],
+            correct: 0
+          },
+          {
+            title: "Lesson 3: Why Reading Matters in Daily Kenyan Life",
+            type: "lesson",
+            speech: "Literacy helps us read market signs in town and storybooks at home!",
+            cardTitle: "Lesson 3: Literacy in Daily Life",
+            cardBody: "<div class='text-center space-y-3'><span class='text-6xl'>🏙️ 📖 🛒</span><p class='text-lg font-bold text-[#4A5568]'>Reading lets you read road signs, market prices, and storybooks all by yourself!</p></div>"
+          }
+        ]
+      },
+      interpret: {
+        title: "Stage 2: Interpret",
+        companion: "zuri",
+        companionName: "Zuri the Happy Leopard 🐆",
+        steps: [
+          {
+            title: "Lesson 1: Reading Simple Sentences",
+            type: "lesson",
+            speech: "Jambo! I am Zuri! Let's read simple sentences about wildlife together!",
+            cardTitle: "Lesson 1: Simple Story Reading",
+            cardBody: "<div class='p-5 bg-white rounded-3xl border-4 border-[#F4A261] text-center'><p class='text-2xl font-black text-[#264653]'>'The brave lion sleeps under the shade of the Acacia tree.'</p></div>"
+          },
+          {
+            title: "Practice 1: Story Comprehension",
+            type: "question",
+            speech: "Where is the brave lion sleeping?",
+            questionText: "Where is the brave lion sleeping?",
+            options: ["Under the Acacia tree", "On the roof", "In the lake", "In a car"],
+            correct: 0
+          },
+          {
+            title: "Interactive Game: Mara River Crossing 🐊",
+            type: "game",
+            speech: "Help Zuri cross the Mara River! Tap ALL the stepping stones that spell 'READ'!",
+            gameTitle: "Tap ALL stepping stones with the word 'READ'!",
+            targetItems: ["READ", "JUMP", "READ", "RUN", "READ", "STOP"],
+            correctIndices: [0, 2, 4],
+            targetIcon: "🪨"
+          },
+          {
+            title: "Lesson 2: Sentence Building",
+            type: "lesson",
+            speech: "Awesome job crossing the river! Sentences start with a big capital letter and end with a full stop!",
+            cardTitle: "Lesson 2: Building Strong Sentences",
+            cardBody: "<div class='p-5 bg-[#FFF8E7] rounded-3xl border-4 border-[#E9C46A] text-center space-y-2'><p class='text-2xl font-black text-[#2A9D8F]'>'Zuri likes to read storybooks.'</p><p class='text-sm font-extrabold text-[#4A5568]'>Capital 'Z' at the start • Full stop '.' at the end!</p></div>"
+          },
+          {
+            title: "Practice 2: Sentence Order",
+            type: "question",
+            speech: "Which sentence is written correctly?",
+            questionText: "Which sentence is written correctly with a capital letter and full stop?",
+            options: ["The sun shines bright.", "the sun shines bright", "sun bright the.", "Shines sun the."],
+            correct: 0
+          }
+        ]
+      },
+      impart: {
+        title: "Stage 3: Impart",
+        companion: "kazi",
+        companionName: "Kazi the Giraffe 🦒",
+        steps: [
+          {
+            title: "Lesson 1: Advanced Vocabulary & Expression",
+            type: "lesson",
+            speech: "Jambo! I am Kazi the Giraffe! Let's learn advanced vocabulary words to express ourselves clearly!",
+            cardTitle: "Lesson 1: Descriptive Words (Adjectives)",
+            cardBody: "<div class='text-center space-y-3'><span class='text-6xl'>🌟 🦒 💬</span><p class='text-xl font-black text-[#2A9D8F]'>Descriptive words make our stories exciting: 'Bright', 'Brave', and 'Kind'!</p></div>"
+          },
+          {
+            title: "Practice 1: Vocabulary Challenge",
+            type: "question",
+            speech: "Which word best describes the tall giraffe standing under the sun?",
+            questionText: "Which word describes Kazi standing tall?",
+            options: ["Majestic", "Tiny", "Dark", "Noisy"],
+            correct: 0
+          },
+          {
+            title: "Interactive Game: Savannah Fruit Harvesting 🥭",
+            type: "game",
+            speech: "Help Kazi pick the ripe mangoes! Tap ALL mangoes with action words (verbs like RUN, SING, READ)!",
+            gameTitle: "Tap ALL mangoes with action words (verbs)!",
+            targetItems: ["RUN", "TREE", "SING", "BOOK", "READ", "GRASS"],
+            correctIndices: [0, 2, 4],
+            targetIcon: "🥭"
+          },
+          {
+            title: "Lesson 2: Clear & Friendly Communication",
+            type: "lesson",
+            speech: "Great job! Clear communication helps us express our thoughts clearly to friends and elders!",
+            cardTitle: "Lesson 2: Communication Mastery",
+            cardBody: "<div class='text-center space-y-2'><span class='text-6xl'>🤝 📜 ✨</span><p class='text-xl font-black text-[#264653]'>Listen politely, speak clearly, and use kind words!</p></div>"
+          },
+          {
+            title: "Practice 2: Expression Check",
+            type: "question",
+            speech: "When you want to express joy about a story, what can you say?",
+            questionText: "Which response shows enthusiastic expression?",
+            options: ["'This story was wonderful!'", "'I don't care.'", "'Whatever.'", "'Be quiet.'"],
+            correct: 0
+          }
+        ]
+      }
+    };
+
+    const praisePhrases = [
+      "Jambo! Exceptional work!",
+      "You are getting stronger every day!",
+      "Super star effort! Keep shining!",
+      "Twende! You nailed it!",
+      "Wonderful! You are a reading champion!"
+    ];
+
+    const encouragePhrases = [
+      "Great effort! You are building your confidence!",
+      "Almost there! Every try makes your brain stronger!",
+      "Keep trying! Literacy is an adventure step by step!",
+      "You've got this! Practice makes perfect!"
+    ];
+
+    const giftItems = [
+      { name: "Fresh Green Safari Grass 🌿", icon: "🌿", desc: "A fresh tasty treat for Yuri the Cow!" },
+      { name: "Crisp Juicy Red Apple 🍎", icon: "🍎", desc: "A sweet juicy snack for Turi the Lion!" },
+      { name: "Golden Sunshine Water 💧", icon: "💧", desc: "Refreshing water for Zuri the Leopard!" },
+      { name: "Tall Acacia Tree Leaves 🍃", icon: "🍃", desc: "Delicious high leaves for Kazi the Giraffe!" }
+    ];
+
+    function speakText(text, onEndCallback) {
+      if (!('speechSynthesis' in window)) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.pitch = 1.75;
+      utterance.rate = 0.9;
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => 
+        v.name.includes("Ana") || 
+        v.name.includes("Samantha") || 
+        v.name.includes("Google US English") || 
+        (v.lang.startsWith("en") && v.name.includes("Child"))
+      ) || voices.find(v => v.lang.startsWith("en"));
+
+      if (preferredVoice) utterance.voice = preferredVoice;
+
+      const activeContainers = document.querySelectorAll('.animal-container');
+      activeContainers.forEach(el => el.classList.add('talking'));
+      toggleMouthAnimation(true);
+
+      utterance.onend = () => {
+        activeContainers.forEach(el => el.classList.remove('talking'));
+        toggleMouthAnimation(false);
+        if (onEndCallback) onEndCallback();
+      };
+
+      utterance.onerror = () => {
+        activeContainers.forEach(el => el.classList.remove('talking'));
+        toggleMouthAnimation(false);
+        if (onEndCallback) onEndCallback();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleMouthAnimation(isOpen) {
+      const closedMouths = document.querySelectorAll('.mouth-closed');
+      const openMouths = document.querySelectorAll('.mouth-open');
+
+      if (isOpen) {
+        closedMouths.forEach(m => m.classList.add('hidden'));
+        openMouths.forEach(m => m.classList.remove('hidden'));
+      } else {
+        closedMouths.forEach(m => m.classList.remove('hidden'));
+        openMouths.forEach(m => m.classList.add('hidden'));
+      }
+    }
+
+    function triggerAnimalJump() {
+      const activeContainers = document.querySelectorAll('.animal-container');
+      activeContainers.forEach(el => {
+        el.classList.add('correct-jump');
+        setTimeout(() => el.classList.remove('correct-jump'), 600);
+      });
+    }
+
+    function renderCompanionGraphic(containerId, companionKey) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      if (companionKey === 'turi') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl">
+            <defs>
+              <radialGradient id="lionHead3D" cx="45%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#FFD000" /><stop offset="60%" stop-color="#E89200" /><stop offset="100%" stop-color="#A05000" />
+              </radialGradient>
+              <radialGradient id="lionMane3D" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#E76F51" /><stop offset="70%" stop-color="#D64527" /><stop offset="100%" stop-color="#801800" />
+              </radialGradient>
+              <radialGradient id="lionEye3D" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#4A2E18" /><stop offset="60%" stop-color="#241408" /><stop offset="100%" stop-color="#050200" />
+              </radialGradient>
+            </defs>
+            <path d="M 100 12 C 40 12 12 50 12 100 C 12 150 40 188 100 188 C 160 188 188 150 188 100 C 188 50 160 12 100 12 Z" fill="url(#lionMane3D)"/>
+            <ellipse cx="100" cy="100" rx="60" ry="54" fill="url(#lionHead3D)" stroke="#944800" stroke-width="2"/>
+            <circle cx="52" cy="58" r="16" fill="url(#lionHead3D)"/><circle cx="52" cy="58" r="9" fill="#FFB4A2"/>
+            <circle cx="148" cy="58" r="16" fill="url(#lionHead3D)"/><circle cx="148" cy="58" r="9" fill="#FFB4A2"/>
+            <ellipse cx="74" cy="92" rx="12" ry="15" fill="url(#lionEye3D)"/><ellipse cx="126" cy="92" rx="12" ry="15" fill="url(#lionEye3D)"/>
+            <circle cx="70" cy="86" r="4.5" fill="#FFF"/><circle cx="122" cy="86" r="4.5" fill="#FFF"/>
+            <ellipse cx="64" cy="112" rx="12" ry="7" fill="#FFB4A2" opacity="0.6"/>
+            <ellipse cx="136" cy="112" rx="12" ry="7" fill="#FFB4A2" opacity="0.6"/>
+            <ellipse cx="100" cy="120" rx="26" ry="16" fill="#FFF8E7"/>
+            <polygon points="100,112 91,120 109,120" fill="#602000"/>
+            <path class="mouth-closed" d="M 88 126 Q 100 134 112 126" stroke="#3D2314" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <g class="mouth-open hidden">
+              <path d="M 88 125 Q 100 138 112 125 Q 100 130 88 125 Z" fill="#9A031E" stroke="#3D2314" stroke-width="2"/>
+              <ellipse cx="100" cy="130" rx="5" ry="2" fill="#FB6F92" />
+            </g>
+          </svg>`;
+      } else if (companionKey === 'yuri') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl">
+            <defs>
+              <radialGradient id="cowHead3D" cx="45%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#FFFFFF" /><stop offset="65%" stop-color="#F3ECE2" /><stop offset="100%" stop-color="#B8A790" />
+              </radialGradient>
+              <radialGradient id="cowEarInner" cx="40%" cy="30%" r="60%">
+                <stop offset="0%" stop-color="#FFD1DC" /><stop offset="100%" stop-color="#B85885" />
+              </radialGradient>
+              <linearGradient id="cowSnout3D" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#FFD1DC" /><stop offset="100%" stop-color="#C75C84" />
+              </linearGradient>
+              <linearGradient id="horn3D" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFF5D6" /><stop offset="100%" stop-color="#915B1E" />
+              </linearGradient>
+              <radialGradient id="cowEye3D" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#523B2A" /><stop offset="100%" stop-color="#0A0502" />
+              </radialGradient>
+            </defs>
+            <path d="M 46 55 Q 12 36 28 72 Z" fill="url(#horn3D)" stroke="#5E3811" stroke-width="2"/>
+            <path d="M 154 55 Q 188 36 172 72 Z" fill="url(#horn3D)" stroke="#5E3811" stroke-width="2"/>
+            <ellipse cx="32" cy="85" rx="22" ry="11" fill="#D8CAB5" transform="rotate(-20 32 85)"/>
+            <ellipse cx="32" cy="85" rx="16" ry="7" fill="url(#cowEarInner)" transform="rotate(-20 32 85)"/>
+            <ellipse cx="168" cy="85" rx="22" ry="11" fill="#D8CAB5" transform="rotate(20 168 85)"/>
+            <ellipse cx="168" cy="85" rx="16" ry="7" fill="url(#cowEarInner)" transform="rotate(20 168 85)"/>
+            <ellipse cx="100" cy="96" rx="60" ry="52" fill="url(#cowHead3D)" />
+            <path d="M 50 64 Q 82 52 70 94 Q 45 88 50 64 Z" fill="#2E1C11" opacity="0.95"/>
+            <path d="M 132 72 Q 158 60 148 102 Q 125 92 132 72 Z" fill="#2E1C11" opacity="0.95"/>
+            <ellipse cx="62" cy="108" rx="13" ry="8" fill="#FFB4A2" opacity="0.65" />
+            <ellipse cx="138" cy="108" rx="13" ry="8" fill="#FFB4A2" opacity="0.65" />
+            <ellipse cx="100" cy="124" rx="40" ry="26" fill="url(#cowSnout3D)" />
+            <circle cx="86" cy="120" r="5" fill="#5E2200"/>
+            <circle cx="114" cy="120" r="5" fill="#5E2200"/>
+            <ellipse cx="70" cy="82" rx="12" ry="15" fill="url(#cowEye3D)"/>
+            <ellipse cx="130" cy="82" rx="12" ry="15" fill="url(#cowEye3D)"/>
+            <circle cx="66" cy="76" r="4.5" fill="#FFF"/><circle cx="126" cy="76" r="4.5" fill="#FFF"/>
+            <path class="mouth-closed" d="M 86 130 Q 100 138 114 130" stroke="#3D2314" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <g class="mouth-open hidden">
+              <path d="M 86 129 Q 100 140 114 129 Q 100 134 86 129 Z" fill="#9A031E" stroke="#3D2314" stroke-width="2"/>
+              <ellipse cx="100" cy="133" rx="5" ry="2" fill="#FB6F92" />
+            </g>
+          </svg>`;
+      } else if (companionKey === 'zuri') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl">
+            <defs>
+              <radialGradient id="leopard3D" cx="45%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#FFC570"/><stop offset="60%" stop-color="#F4A261" /><stop offset="100%" stop-color="#C86D28" />
+              </radialGradient>
+              <radialGradient id="leopardEye" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#80E9D1" /><stop offset="100%" stop-color="#114B44" />
+              </radialGradient>
+            </defs>
+            <circle cx="52" cy="55" r="18" fill="url(#leopard3D)"/><circle cx="52" cy="55" r="10" fill="#FFD1DC"/>
+            <circle cx="148" cy="55" r="18" fill="url(#leopard3D)"/><circle cx="148" cy="55" r="10" fill="#FFD1DC"/>
+            <circle cx="100" cy="102" r="58" fill="url(#leopard3D)" stroke="#C86D28" stroke-width="3"/>
+            <path d="M 66 65 A 6 6 0 1 1 76 75" stroke="#7A3B0E" stroke-width="3.5" fill="none"/>
+            <path d="M 124 65 A 6 6 0 1 0 134 75" stroke="#7A3B0E" stroke-width="3.5" fill="none"/>
+            <ellipse cx="100" cy="118" rx="22" ry="14" fill="#FFFFFF"/>
+            <polygon points="100,110 93,118 107,118" fill="#E07A5F"/>
+            <ellipse cx="74" cy="90" rx="12" ry="14" fill="url(#leopardEye)"/>
+            <ellipse cx="126" cy="90" rx="12" ry="14" fill="url(#leopardEye)"/>
+            <circle cx="70" cy="85" r="4.5" fill="#FFF"/><circle cx="122" cy="85" r="4.5" fill="#FFF"/>
+            <path class="mouth-closed" d="M 88 122 Q 100 130 112 122" stroke="#3D2314" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <g class="mouth-open hidden"><path d="M 88 121 Q 100 130 112 121 Q 100 125 88 121 Z" fill="#9A031E" stroke="#3D2314" stroke-width="1.8"/></g>
+          </svg>`;
+      } else if (companionKey === 'kazi') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl">
+            <defs>
+              <radialGradient id="giraffeHead3D" cx="45%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#FFF2B2" /><stop offset="55%" stop-color="#F4C430" /><stop offset="100%" stop-color="#9E6F00" />
+              </radialGradient>
+              <radialGradient id="giraffeEye3D" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#4A2E18" /><stop offset="100%" stop-color="#050200" />
+              </radialGradient>
+              <linearGradient id="giraffeNeck3D" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#D49A00" /><stop offset="50%" stop-color="#F4C430" /><stop offset="100%" stop-color="#A87700" />
+              </linearGradient>
+            </defs>
+            <path d="M 78 130 L 122 130 L 118 195 L 82 195 Z" fill="url(#giraffeNeck3D)"/>
+            <line x1="82" y1="48" x2="82" y2="20" stroke="#F4C430" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="82" cy="18" r="9" fill="#2A9D8F"/>
+            <line x1="118" y1="48" x2="118" y2="20" stroke="#F4C430" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="118" cy="18" r="9" fill="#2A9D8F"/>
+            <ellipse cx="44" cy="72" rx="20" ry="10" fill="url(#giraffeHead3D)" transform="rotate(-30 44 72)"/>
+            <ellipse cx="156" cy="72" rx="20" ry="10" fill="url(#giraffeHead3D)" transform="rotate(30 156 72)"/>
+            <ellipse cx="100" cy="94" rx="44" ry="52" fill="url(#giraffeHead3D)" stroke="#9E6F00" stroke-width="2"/>
+            <ellipse cx="100" cy="116" rx="28" ry="18" fill="#FFF8E7"/>
+            <circle cx="91" cy="112" r="3.5" fill="#7A4200"/><circle cx="109" cy="112" r="3.5" fill="#7A4200"/>
+            <ellipse cx="74" cy="85" rx="10" ry="13" fill="url(#giraffeEye3D)"/>
+            <ellipse cx="126" cy="85" rx="10" ry="13" fill="url(#giraffeEye3D)"/>
+            <circle cx="71" cy="80" r="4" fill="#FFF"/><circle cx="123" cy="80" r="4" fill="#FFF"/>
+            <path class="mouth-closed" d="M 88 120 Q 100 128 112 120" stroke="#3D2314" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <g class="mouth-open hidden">
+              <path d="M 88 119 Q 100 128 112 119 Q 100 124 88 119 Z" fill="#9A031E" stroke="#3D2314" stroke-width="1.8"/>
+            </g>
+          </svg>`;
+      }
+    }
+
+    function showPage(pageId) {
+      document.getElementById('welcome-page').classList.add('hidden');
+      document.getElementById('roadmap-page').classList.add('hidden');
+      document.getElementById('assessment-page').classList.add('hidden');
+      document.getElementById('stage-overview-page').classList.add('hidden');
+      document.getElementById('course-page').classList.add('hidden');
+
+      const target = document.getElementById(pageId);
+      if (target) target.classList.remove('hidden');
+    }
+
+    function goToRoadmap() {
+      showPage('roadmap-page');
+      renderCompanionGraphic('card-yuri-container', 'yuri');
+      renderCompanionGraphic('card-zuri-container', 'zuri');
+      renderCompanionGraphic('card-kazi-container', 'kazi');
+      updateRoadmapSlider();
+    }
+
+    function updateRoadmapSlider() {
+      const slider = document.getElementById('roadmap-slider');
+      slider.style.transform = `translateX(-${roadmapSlideIndex * 100}%)`;
+
+      for (let i = 0; i < 3; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i === roadmapSlideIndex) {
+          dot.className = "w-5 h-5 rounded-full bg-[#2A9D8F]";
+        } else {
+          dot.className = "w-5 h-5 rounded-full bg-gray-300";
+        }
+      }
+    }
+
+    function nextRoadmapSlide() {
+      roadmapSlideIndex = (roadmapSlideIndex + 1) % 3;
+      updateRoadmapSlider();
+    }
+
+    function prevRoadmapSlide() {
+      roadmapSlideIndex = (roadmapSlideIndex - 1 + 3) % 3;
+      updateRoadmapSlider();
+    }
+
+    function goToAssessment() {
+      showPage('assessment-page');
+      currentAssessmentIndex = 0;
+      assessmentScore = 0;
+      renderCompanionGraphic('assessment-turi-container', 'turi');
+      loadAssessmentQuestion();
+    }
+
+    function loadAssessmentQuestion() {
+      if (currentAssessmentIndex >= assessmentQuestions.length) {
+        finishAssessment();
+        return;
+      }
+
+      const q = assessmentQuestions[currentAssessmentIndex];
+      document.getElementById('question-number-badge').innerText = `Question ${currentAssessmentIndex + 1} of ${assessmentQuestions.length}`;
+      document.getElementById('assessment-score-badge').innerText = `Score: ${assessmentScore}`;
+      document.getElementById('assessment-question-text').innerText = q.question;
+
+      const grid = document.getElementById('assessment-options-grid');
+      grid.innerHTML = '';
+
+      q.options.forEach((optText, index) => {
+        const btn = document.createElement('button');
+        btn.className = "bg-white border-4 border-[#2A9D8F] hover:bg-[#E8F5E9] text-[#264653] font-black p-5 rounded-3xl text-left shadow-lg transition-transform hover:scale-102 cursor-pointer text-lg sm:text-xl flex items-center gap-3";
+        btn.innerHTML = `<span class="inline-flex w-10 h-10 bg-[#2A9D8F] text-white rounded-full items-center justify-center font-black text-lg flex-shrink-0">${String.fromCharCode(65 + index)}</span> <span>${optText}</span>`;
+        btn.onclick = () => handleAssessmentAnswer(index);
+        grid.appendChild(btn);
+      });
+
+      const speech = `Question ${currentAssessmentIndex + 1}: ${q.question}. What do you think is the answer?`;
+      document.getElementById('assessment-speech').innerText = speech;
+      speakText(speech);
+    }
+
+    function handleAssessmentAnswer(selectedIndex) {
+      const q = assessmentQuestions[currentAssessmentIndex];
+      const isCorrect = (selectedIndex === q.correct);
+
+      if (isCorrect) {
+        assessmentScore++;
+        currentStars += 10;
+        totalEggs++;
+        updateTopScores();
+        triggerAnimalJump();
+        confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+
+        const phrase = praisePhrases[Math.floor(Math.random() * praisePhrases.length)];
+        document.getElementById('assessment-speech').innerText = phrase;
+        speakText(phrase, () => {
+          currentAssessmentIndex++;
+          loadAssessmentQuestion();
+        });
+      } else {
+        const encourage = encouragePhrases[Math.floor(Math.random() * encouragePhrases.length)];
+        document.getElementById('assessment-speech').innerText = encourage;
+        speakText(encourage, () => {
+          currentAssessmentIndex++;
+          loadAssessmentQuestion();
+        });
+      }
+    }
+
+    function finishAssessment() {
+      let recommendedStage = 'inspire';
+      if (assessmentScore >= 9) {
+        recommendedStage = 'impart';
+      } else if (assessmentScore >= 5) {
+        recommendedStage = 'interpret';
+      } else {
+        recommendedStage = 'inspire';
+      }
+
+      activeStageKey = recommendedStage;
+      const stageObj = courseData[recommendedStage];
+
+      checkBadges();
+
+      const speech = `Awesome job finishing! Based on your score, your recommended journey is ${stageObj.title}! Tap play to start!`;
+      document.getElementById('assessment-speech').innerText = speech;
+
+      const grid = document.getElementById('assessment-options-grid');
+      grid.innerHTML = `
+        <div class="col-span-full text-center py-4">
+          <button onclick="showStageOverview('${recommendedStage}')" class="bg-[#2A9D8F] hover:bg-[#218377] text-white text-2xl sm:text-3xl font-black px-10 py-5 rounded-3xl border-4 border-white shadow-xl cursor-pointer">
+            Play Recommended Journey: ${stageObj.title} 🚀
+          </button>
+        </div>
+      `;
+
+      speakText(speech);
+    }
+
+    function showStageOverview(stageKey) {
+      activeStageKey = stageKey;
+      showPage('stage-overview-page');
+
+      const stageObj = courseData[stageKey];
+      document.getElementById('overview-stage-title').innerText = stageObj.title;
+      document.getElementById('overview-guide-name').innerText = `Guided by ${stageObj.companionName}`;
+      renderCompanionGraphic('overview-companion-container', stageObj.companion);
+
+      const stepsContainer = document.getElementById('curriculum-steps-container');
+      stepsContainer.innerHTML = '';
+
+      stageObj.steps.forEach((step, index) => {
+        const item = document.createElement('div');
+        item.className = "flex items-center gap-4 bg-white p-4 rounded-3xl border-4 border-[#E9C46A] shadow-md";
+        
+        let typeBadge = '📖 Lesson';
+        let badgeBg = 'bg-[#FFE8D6] text-[#E76F51]';
+
+        if (step.type === 'question') {
+          typeBadge = '🎯 Practice Quiz';
+          badgeBg = 'bg-[#E8F5E9] text-[#2A9D8F]';
+        } else if (step.type === 'game') {
+          typeBadge = '🎮 Safari Mini-Game';
+          badgeBg = 'bg-[#E0F2FE] text-[#0284C7]';
+        } else if (step.type === 'tracing') {
+          typeBadge = '✍️ Tracing Exercise';
+          badgeBg = 'bg-[#F3E8FF] text-[#9333EA]';
+        }
+
+        item.innerHTML = `
+          <div class="w-11 h-11 rounded-full bg-[#2A9D8F] text-white font-black flex items-center justify-center flex-shrink-0 text-base shadow">
+            ${index + 1}
+          </div>
+          <div class="flex-grow text-left">
+            <h4 class="font-black text-[#264653] text-lg sm:text-xl">${step.title}</h4>
+            <span class="text-xs font-black px-3 py-1 rounded-full ${badgeBg} inline-block mt-1">
+              ${typeBadge}
+            </span>
+          </div>
+        `;
+        stepsContainer.appendChild(item);
+      });
+
+      speakText(`Welcome to ${stageObj.title}! Check out your lesson map with games and tracing exercises, then press Start Lesson when you are ready!`);
+    }
+
+    function beginCourseLessons() {
+      currentLessonStep = 0;
+      showPage('course-page');
+
+      const stageObj = courseData[activeStageKey];
+      document.getElementById('course-stage-title').innerText = stageObj.title;
+      renderCompanionGraphic('course-companion-container', stageObj.companion);
+
+      loadCourseStep();
+    }
+
+    function loadCourseStep() {
+      if (gameNudgeTimer) {
+        clearTimeout(gameNudgeTimer);
+        gameNudgeTimer = null;
+      }
+      if (tracingIdleTimer) {
+        clearTimeout(tracingIdleTimer);
+        tracingIdleTimer = null;
+      }
+
+      const stageObj = courseData[activeStageKey];
+      const totalSteps = stageObj.steps.length;
+
+      if (currentLessonStep >= totalSteps) {
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+        totalEggs += 2;
+        currentStars += 50;
+
+        if (!completedStages.includes(activeStageKey)) {
+          completedStages.push(activeStageKey);
+        }
+
+        updateTopScores();
+        checkBadges();
+
+        document.getElementById('course-progress-bar').style.width = `100%`;
+        document.getElementById('course-progress-text').innerText = `100% Completed! 🎉`;
+
+        document.getElementById('course-companion-speech').innerText = "Hongera! You finished this entire stage! You earned 2 Surprise Eggs! 🥚🥚";
+        speakText("Hongera! You finished this entire stage! You earned 2 Surprise Eggs!");
+
+        document.getElementById('lesson-card-content').innerHTML = `
+          <div class="text-center py-8 space-y-5">
+            <span class="text-7xl">🏆</span>
+            <h3 class="text-4xl font-black text-[#2A9D8F]">Stage Complete!</h3>
+            <p class="text-lg text-[#4A5568] font-bold">You unlocked the Stage Mastery Badge!</p>
+            <button onclick="goToRoadmap()" class="bg-[#E76F51] text-white text-2xl font-black px-10 py-4 rounded-3xl cursor-pointer shadow-xl">
+              Back to Roadmap 🗺️
+            </button>
+          </div>
+        `;
+        document.getElementById('course-options-grid').classList.add('hidden');
+        document.getElementById('course-tracing-container').classList.add('hidden');
+        document.getElementById('course-game-container').classList.add('hidden');
+        document.getElementById('course-next-btn').classList.add('hidden');
+        return;
+      }
+
+      const progressPercent = Math.round(((currentLessonStep + 1) / totalSteps) * 100);
+      document.getElementById('course-progress-bar').style.width = `${progressPercent}%`;
+      document.getElementById('course-progress-text').innerText = `Step ${currentLessonStep + 1} / ${totalSteps} (${progressPercent}%)`;
+
+      const step = stageObj.steps[currentLessonStep];
+      document.getElementById('course-companion-speech').innerText = step.speech;
+      speakText(step.speech);
+
+      const contentBox = document.getElementById('lesson-card-content');
+      const optionsGrid = document.getElementById('course-options-grid');
+      const tracingContainer = document.getElementById('course-tracing-container');
+      const gameContainer = document.getElementById('course-game-container');
+      const nextBtn = document.getElementById('course-next-btn');
+
+      contentBox.classList.add('hidden');
+      optionsGrid.classList.add('hidden');
+      tracingContainer.classList.add('hidden');
+      gameContainer.classList.add('hidden');
+      nextBtn.classList.add('hidden');
+
+      if (step.type === 'lesson') {
+        contentBox.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+
+        contentBox.innerHTML = `
+          <h4 class="text-2xl font-black text-[#E76F51]">${step.cardTitle}</h4>
+          ${step.cardBody}
+        `;
+      } else if (step.type === 'question') {
+        optionsGrid.classList.remove('hidden');
+
+        optionsGrid.innerHTML = '';
+        step.options.forEach((optText, index) => {
+          const btn = document.createElement('button');
+          btn.className = "bg-white border-4 border-[#F4A261] text-[#264653] font-black p-5 rounded-3xl text-left shadow-md cursor-pointer hover:scale-102 text-lg sm:text-xl flex items-center gap-3";
+          btn.innerHTML = `<span class="inline-flex w-10 h-10 bg-[#F4A261] text-white rounded-full items-center justify-center font-black text-lg flex-shrink-0">${String.fromCharCode(65 + index)}</span> <span>${optText}</span>`;
+          btn.onclick = () => handleCourseAnswer(index);
+          optionsGrid.appendChild(btn);
+        });
+      } else if (step.type === 'tracing') {
+        tracingContainer.classList.remove('hidden');
+        currentGuideLetter = step.guideLetter || "A";
+        document.getElementById('tracing-guide-letter').innerText = currentGuideLetter;
+        initTracingCanvas();
+      } else if (step.type === 'game') {
+        gameContainer.classList.remove('hidden');
+        document.getElementById('game-instruction-title').innerText = step.gameTitle;
+        setupMiniGame(step);
+      }
+    }
+
+    function initTracingCanvas() {
+      const canvas = document.getElementById('tracing-canvas');
+      tracingCtx = canvas.getContext('2d');
+      tracingGradedSuccess = false;
+
+      guideCanvas = document.createElement('canvas');
+      guideCanvas.width = canvas.width;
+      guideCanvas.height = canvas.height;
+      guideCtx = guideCanvas.getContext('2d');
+
+      guideCtx.clearRect(0, 0, guideCanvas.width, guideCanvas.height);
+      guideCtx.font = "900 128px Fredoka, sans-serif";
+      guideCtx.textAlign = "center";
+      guideCtx.textBaseline = "middle";
+      guideCtx.fillStyle = "#000000";
+      guideCtx.fillText(currentGuideLetter, guideCanvas.width / 2, guideCanvas.height / 2 + 10);
+
+      clearTracingCanvas();
+
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      };
+
+      const handleStart = (e) => {
+        if (tracingGradedSuccess) return;
+        isTracing = true;
+        if (tracingIdleTimer) clearTimeout(tracingIdleTimer);
+
+        const pos = getPos(e);
+        tracingCtx.beginPath();
+        tracingCtx.moveTo(pos.x, pos.y);
+        tracingCtx.strokeStyle = '#2A9D8F';
+        tracingCtx.lineWidth = 26;
+        tracingCtx.lineCap = 'round';
+        tracingCtx.lineJoin = 'round';
+      };
+
+      const handleMove = (e) => {
+        if (!isTracing || !tracingCtx || tracingGradedSuccess) return;
+        const pos = getPos(e);
+        tracingCtx.lineTo(pos.x, pos.y);
+        tracingCtx.stroke();
+      };
+
+      const handleEnd = () => {
+        if (!isTracing) return;
+        isTracing = false;
+        if (!tracingGradedSuccess) {
+          gradeTracingAttempt();
+        }
+      };
+
+      canvas.onmousedown = handleStart;
+      canvas.onmousemove = handleMove;
+      canvas.onmouseup = handleEnd;
+      canvas.onmouseleave = handleEnd;
+
+      canvas.ontouchstart = (e) => { e.preventDefault(); handleStart(e); };
+      canvas.ontouchmove = (e) => { e.preventDefault(); handleMove(e); };
+      canvas.ontouchend = handleEnd;
+
+      scheduleTracingIdleCue();
+    }
+
+    function clearTracingCanvas() {
+      if (!tracingCtx) return;
+      const canvas = document.getElementById('tracing-canvas');
+      tracingCtx.clearRect(0, 0, canvas.width, canvas.height);
+      tracingGradedSuccess = false;
+      scheduleTracingIdleCue();
+    }
+
+    function gradeTracingAttempt() {
+      if (!tracingCtx || !guideCtx || tracingGradedSuccess) return;
+
+      const canvas = document.getElementById('tracing-canvas');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const userImgData = tracingCtx.getImageData(0, 0, w, h).data;
+      const guideImgData = guideCtx.getImageData(0, 0, w, h).data;
+
+      let totalGuidePixels = 0;
+      let matchedPixels = 0;
+      let userDrawnPixels = 0;
+      let offTargetDrawnPixels = 0;
+
+      for (let i = 0; i < guideImgData.length; i += 4) {
+        const isGuidePixel = guideImgData[i + 3] > 128;
+        const isUserPixel = userImgData[i + 3] > 128;
+
+        if (isGuidePixel) {
+          totalGuidePixels++;
+          if (isUserPixel) {
+            matchedPixels++;
+          }
+        }
+
+        if (isUserPixel) {
+          userDrawnPixels++;
+          if (!isGuidePixel) {
+            offTargetDrawnPixels++;
+          }
+        }
+      }
+
+      if (totalGuidePixels === 0 || userDrawnPixels === 0) {
+        scheduleTracingIdleCue();
+        return;
+      }
+
+      const coverageRatio = matchedPixels / totalGuidePixels;
+      const offTargetRatio = offTargetDrawnPixels / userDrawnPixels;
+
+      if (coverageRatio >= 0.65 && offTargetRatio <= 0.35) {
+        tracingGradedSuccess = true;
+        if (tracingIdleTimer) clearTimeout(tracingIdleTimer);
+        checkTracingComplete();
+      } else {
+        let errorMsg = `Keep going! You have traced ${Math.round(coverageRatio * 100)}% of the letter '${currentGuideLetter}'. Trace all the way to finish!`;
+        if (offTargetRatio > 0.35) {
+          errorMsg = `Oops! Try to stay inside the lines of the letter '${currentGuideLetter}'! Tap clear to try again!`;
+        }
+        document.getElementById('course-companion-speech').innerText = errorMsg;
+        speakText(errorMsg, () => {
+          scheduleTracingIdleCue(coverageRatio, offTargetRatio);
+        });
+      }
+    }
+
+    function scheduleTracingIdleCue(coverage = 0, offTarget = 0) {
+      if (tracingIdleTimer) clearTimeout(tracingIdleTimer);
+      if (tracingGradedSuccess) return;
+
+      tracingIdleTimer = setTimeout(() => {
+        if (tracingGradedSuccess) return;
+
+        let promptSpeech = `Keep tracing the full letter '${currentGuideLetter}'! Follow the lines completely!`;
+
+        if (offTarget > 0.35) {
+          promptSpeech = `Try to stay inside the lines of '${currentGuideLetter}'! Tap clear to try again!`;
+        } else if (coverage > 0) {
+          promptSpeech = `You're partially done! Finish tracing the rest of '${currentGuideLetter}'!`;
+        }
+
+        document.getElementById('course-companion-speech').innerText = promptSpeech;
+        speakText(promptSpeech, () => {
+          scheduleTracingIdleCue(coverage, offTarget);
+        });
+      }, 3500);
+    }
+
+    function checkTracingComplete() {
+      currentStars += 15;
+      totalEggs++;
+      updateTopScores();
+      checkBadges();
+      triggerAnimalJump();
+      confetti({ particleCount: 40, spread: 65, origin: { y: 0.6 } });
+
+      const phrase = praisePhrases[Math.floor(Math.random() * praisePhrases.length)];
+      document.getElementById('course-companion-speech').innerText = `Hongera! Perfect tracing! ${phrase}`;
+      speakText(`Hongera! Perfect tracing! ${phrase}`, () => {
+        currentLessonStep++;
+        loadCourseStep();
+      });
+    }
+
+    function setupMiniGame(step) {
+      selectedGameIndices = [];
+      if (gameNudgeTimer) {
+        clearTimeout(gameNudgeTimer);
+        gameNudgeTimer = null;
+      }
+
+      const grid = document.getElementById('game-items-grid');
+      grid.innerHTML = '';
+
+      step.targetItems.forEach((itemVal, idx) => {
+        const itemBtn = document.createElement('button');
+        itemBtn.id = `game-item-${idx}`;
+        itemBtn.className = "bg-white border-4 border-[#E9C46A] p-5 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-md hover:scale-105 cursor-pointer transition-all";
+        itemBtn.innerHTML = `
+          <span class="text-4xl sm:text-5xl">${step.targetIcon}</span>
+          <span class="text-2xl sm:text-3xl font-black text-[#264653]">${itemVal}</span>
+        `;
+        itemBtn.onclick = () => toggleGameItem(itemBtn, idx, step);
+        grid.appendChild(itemBtn);
+      });
+
+      scheduleGameNudge(step);
+    }
+
+    function scheduleGameNudge(step) {
+      if (gameNudgeTimer) clearTimeout(gameNudgeTimer);
+
+      gameNudgeTimer = setTimeout(() => {
+        const totalTargets = step.correctIndices.length;
+        const remaining = totalTargets - selectedGameIndices.length;
+
+        if (remaining > 0) {
+          const nudgeSpeech = remaining === 1 
+            ? "You're so close! Just one more item left to find!" 
+            : `Remember to select ALL ${totalTargets} correct items! Keep going!`;
+          
+          document.getElementById('course-companion-speech').innerText = nudgeSpeech;
+          speakText(nudgeSpeech, () => {
+            scheduleGameNudge(step);
+          });
+        }
+      }, 15000);
+    }
+
+    function toggleGameItem(btn, idx, step) {
+      if (selectedGameIndices.includes(idx)) return;
+
+      if (step.correctIndices.includes(idx)) {
+        selectedGameIndices.push(idx);
+        btn.classList.remove('border-[#E9C46A]', 'bg-white');
+        btn.classList.add('border-[#2A9D8F]', 'bg-[#E8F5E9]');
+
+        if (gameNudgeTimer) clearTimeout(gameNudgeTimer);
+
+        const totalRequired = step.correctIndices.length;
+        const remainingCount = totalRequired - selectedGameIndices.length;
+
+        if (remainingCount > 0) {
+          let cueText = `Great job! Find the other ${remainingCount} item${remainingCount > 1 ? 's' : ''}!`;
+          if (remainingCount === 1) {
+            cueText = "Awesome! Just one more correct item left to select!";
+          }
+
+          document.getElementById('course-companion-speech').innerText = cueText;
+          triggerAnimalJump();
+          speakText(cueText);
+          scheduleGameNudge(step);
+        } else {
+          if (gameNudgeTimer) {
+            clearTimeout(gameNudgeTimer);
+            gameNudgeTimer = null;
+          }
+
+          currentStars += 20;
+          totalEggs++;
+          updateTopScores();
+          checkBadges();
+          triggerAnimalJump();
+          confetti({ particleCount: 50, spread: 75 });
+
+          const phrase = praisePhrases[Math.floor(Math.random() * praisePhrases.length)];
+          document.getElementById('course-companion-speech').innerText = phrase;
+          speakText(phrase, () => {
+            currentLessonStep++;
+            loadCourseStep();
+          });
+        }
+      } else {
+        btn.classList.add('animate-bounce', 'border-[#E76F51]');
+        setTimeout(() => btn.classList.remove('animate-bounce'), 800);
+
+        const encourage = encouragePhrases[Math.floor(Math.random() * encouragePhrases.length)];
+        document.getElementById('course-companion-speech').innerText = encourage;
+        speakText(encourage);
+        scheduleGameNudge(step);
+      }
+    }
+
+    function handleCourseAnswer(selectedIndex) {
+      const step = courseData[activeStageKey].steps[currentLessonStep];
+      if (selectedIndex === step.correct) {
+        currentStars += 15;
+        totalEggs++;
+        updateTopScores();
+        checkBadges();
+        triggerAnimalJump();
+        confetti({ particleCount: 35, spread: 55 });
+
+        const phrase = praisePhrases[Math.floor(Math.random() * praisePhrases.length)];
+        document.getElementById('course-companion-speech').innerText = phrase;
+        speakText(phrase, () => {
+          currentLessonStep++;
+          loadCourseStep();
+        });
+      } else {
+        const encourage = encouragePhrases[Math.floor(Math.random() * encouragePhrases.length)];
+        document.getElementById('course-companion-speech').innerText = encourage;
+        speakText(encourage);
+      }
+    }
+
+    function nextCourseStep() {
+      currentLessonStep++;
+      loadCourseStep();
+    }
+
+    function repeatCompanionSpeech() {
+      const speechText = document.getElementById('course-companion-speech').innerText;
+      speakText(speechText);
+    }
+
+    function updateTopScores() {
+      document.getElementById('egg-badge').innerText = totalEggs;
+    }
+
+    function openRoadmapsModal() {
+      document.getElementById('roadmaps-modal').classList.remove('hidden');
+      renderCompanionGraphic('modal-yuri-avatar', 'yuri');
+      renderCompanionGraphic('modal-zuri-avatar', 'zuri');
+      renderCompanionGraphic('modal-kazi-avatar', 'kazi');
+    }
+
+    function closeRoadmapsModal() {
+      document.getElementById('roadmaps-modal').classList.add('hidden');
+    }
+
+    function selectModalRoadmap(stageKey) {
+      closeRoadmapsModal();
+      showStageOverview(stageKey);
+    }
+
+    function checkBadges() {
+      badgesData.forEach(badge => {
+        if (!unlockedBadgeIds.includes(badge.id) && badge.unlock()) {
+          unlockedBadgeIds.push(badge.id);
+          confetti({ particleCount: 50, spread: 70 });
+        }
+      });
+      document.getElementById('badge-count-text').innerText = `${unlockedBadgeIds.length} / ${badgesData.length} Unlocked`;
+    }
+
+    function openBadgesModal() {
+      document.getElementById('badges-modal').classList.remove('hidden');
+      renderBadgesGrid();
+    }
+
+    function closeBadgesModal() {
+      document.getElementById('badges-modal').classList.add('hidden');
+    }
+
+    function renderBadgesGrid() {
+      const grid = document.getElementById('badges-grid');
+      grid.innerHTML = '';
+
+      badgesData.forEach(badge => {
+        const isUnlocked = unlockedBadgeIds.includes(badge.id);
+        const card = document.createElement('div');
+        card.className = `p-6 rounded-3xl border-4 text-center transition-all ${isUnlocked ? 'bg-[#E8F5E9] border-[#2A9D8F] shadow-xl scale-102' : 'bg-gray-100 border-gray-300 opacity-60'}`;
+        card.innerHTML = `
+          <div class="text-6xl mb-3 ${isUnlocked ? 'animate-bounce' : ''}">${badge.icon}</div>
+          <div class="text-lg font-black text-[#264653]">${badge.name}</div>
+          <div class="text-sm text-gray-600 font-extrabold mt-1 leading-snug">${badge.desc}</div>
+          <div class="mt-4 text-xs font-black uppercase px-4 py-1.5 rounded-full inline-block shadow ${isUnlocked ? 'bg-[#2A9D8F] text-white' : 'bg-gray-300 text-gray-600'}">
+            ${isUnlocked ? 'Unlocked 🔓' : 'Locked 🔒'}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openEggModal() {
+      document.getElementById('egg-modal').classList.remove('hidden');
+      renderEggBasket();
+    }
+
+    function closeEggModal() {
+      document.getElementById('egg-modal').classList.add('hidden');
+      document.getElementById('gift-reveal-box').classList.add('hidden');
+    }
+
+    function renderEggBasket() {
+      const container = document.getElementById('eggs-container');
+      container.innerHTML = '';
+
+      if (totalEggs <= 0) {
+        container.innerHTML = `<p class="text-lg text-gray-500 font-black py-4">No eggs yet! Play lessons & assessments to earn surprise eggs!</p>`;
+        return;
+      }
+
+      for (let i = 0; i < totalEggs; i++) {
+        const eggBtn = document.createElement('button');
+        eggBtn.className = "text-7xl hover:scale-125 transition-transform cursor-pointer p-2 drop-shadow-md";
+        eggBtn.innerText = "🥚";
+        eggBtn.onclick = () => crackEgg(eggBtn);
+        container.appendChild(eggBtn);
+      }
+    }
+
+    function crackEgg(eggElement) {
+      eggElement.innerText = "🐣";
+      totalEggs = Math.max(0, totalEggs - 1);
+      eggsCracked++;
+      updateTopScores();
+      checkBadges();
+      confetti({ particleCount: 40, spread: 60 });
+
+      const randomGift = giftItems[Math.floor(Math.random() * giftItems.length)];
+      
+      const revealBox = document.getElementById('gift-reveal-box');
+      revealBox.classList.remove('hidden');
+      document.getElementById('gift-icon').innerText = randomGift.icon;
+      document.getElementById('gift-title').innerText = `You revealed: ${randomGift.name}`;
+      document.getElementById('gift-desc').innerText = randomGift.desc;
+
+      const giveBtn = document.getElementById('give-gift-btn');
+      giveBtn.onclick = () => giveGiftToAnimal(randomGift);
+
+      setTimeout(() => renderEggBasket(), 600);
+    }
+
+    function giveGiftToAnimal(gift) {
+      document.getElementById('gift-reveal-box').classList.add('hidden');
+      closeEggModal();
+      confetti({ particleCount: 80, spread: 90 });
+
+      const thankSpeech = `Asante sana! Thank you so much for the delicious ${gift.name}! You are so kind!`;
+      speakText(thankSpeech);
+    }
+
+    window.onload = function() {
+      renderCompanionGraphic('turi-welcome-container', 'turi');
+      updateTopScores();
+      checkBadges();
+    };
+  </script>
+</body>
+</html>
